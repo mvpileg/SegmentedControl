@@ -8,11 +8,12 @@
 
 import UIKit
 
-class Segment : UIView {
-    
-}
-
 class MVPSegmentedControl : UIView {
+    
+    var selectedTextColor: UIColor
+    var defaultTextColor: UIColor
+    
+    var selectedBackgroundColor: UIColor
     
     var options: [String]? {
         didSet {
@@ -23,7 +24,15 @@ class MVPSegmentedControl : UIView {
     private var optionViews: [UIView]?
     
     required init?(coder aDecoder: NSCoder) {
+        selectedTextColor = UIColor.black
+        defaultTextColor = UIColor.white
+        selectedBackgroundColor = UIColor.orange
+        
         super.init(coder: aDecoder)
+        
+        layer.cornerRadius = 5
+        clipsToBounds = true
+        backgroundColor = UIColor.white.withAlphaComponent(0.1)
         
         self.options = ["Male", "Female"]
         
@@ -48,9 +57,7 @@ class MVPSegmentedControl : UIView {
             subview.addGestureRecognizer(tap)
             
             addSubview(subview)
-            
-        
-            
+
             optionViews!.append(subview)
         }
         
@@ -58,9 +65,7 @@ class MVPSegmentedControl : UIView {
     }
     
     private func applyDefaultStyles() {
-        layer.cornerRadius = 5
-        clipsToBounds = true
-        backgroundColor = UIColor.white.withAlphaComponent(0.5)
+
     }
     
     private func addConstraints() {
@@ -88,15 +93,17 @@ class MVPSegmentedControl : UIView {
         //subview
         let subview = UIView()
         
-        subview.backgroundColor = UIColor.white
         subview.translatesAutoresizingMaskIntoConstraints = false
-    
+        subview.clipsToBounds = true
+        subview.layer.cornerRadius = 5
         
         //label
         let label = UILabel()
         
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "test"
+        label.text = text
+        label.textColor = defaultTextColor
+        
         subview.addSubview(label)
         
         label.centerXAnchor.constraint(equalTo: subview.centerXAnchor).isActive = true
@@ -104,17 +111,21 @@ class MVPSegmentedControl : UIView {
 
         return subview
     }
-    
-//    private func handleTap() {
-//
-//    }
-    
+
     @objc private func handleTap(_ sender: UITapGestureRecognizer) {
         guard let optionsViews = optionViews else { return }
 
         optionsViews.forEach { view in
-            let backgroundColor = (view == sender.view) ? UIColor.black : UIColor.white
+            let selected = (view == sender.view)
+            let backgroundColor = selected ? selectedBackgroundColor : UIColor.clear
             view.backgroundColor = backgroundColor
+            
+            //TODO: refactor into uiview subclass that always has a label
+            view.subviews.forEach { possibleLabel in
+                if let label = possibleLabel as? UILabel {
+                    label.textColor = selected ? selectedTextColor : defaultTextColor
+                }
+            }
         }
     }
     
